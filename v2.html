@@ -1,0 +1,26 @@
+<script type="module">
+  const modelViewer = document.querySelector("model-viewer");
+
+  // When the model is loaded and ready, try to enter AR automatically
+  modelViewer.addEventListener('load', () => {
+    // Note: Most browsers require a user gesture (like a tap) to open the camera.
+    // This will trigger AR on the first tap anywhere on the screen.
+    document.addEventListener('click', () => {
+      if (!modelViewer.canActivateAR) return;
+      modelViewer.activateAR();
+    }, { once: true });
+  });
+</script>
+
+<body>
+    <model-viewer 
+        id="auto-ar"
+        src="https://raw.githubusercontent.com/sp25-elc-006-afk/Model-Viewer/main/fish.glb" 
+        ar 
+        ar-modes="webxr scene-viewer quick-look" 
+        camera-controls 
+        style="width: 100%; height: 100vh;">
+        
+        <button slot="ar-button" id="ar-button" style="display:none;"></button>
+    </model-viewer>
+</body>
