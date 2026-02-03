@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Fish World Tracking AR</title>
+    <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
+</head>
+<body style="margin: 0; overflow: hidden;">
+
+    <a-scene 
+      webxr="optionalFeatures: hit-test, dom-overlay; overlayElement: #overlay;"
+      renderer="colorManagement: true;">
+      
+      <a-assets>
+        <a-asset-item id="fish" src="https://raw.githubusercontent.com/sp25-elc-006-afk/Model-Viewer/main/fishfinal.glb"></a-asset-item>
+      </a-assets>
+
+      <a-entity id="reticle" visible="false">
+        <a-ring color="#00ff00" rotation="-90 0 0" radius-inner="0.1" radius-outer="0.15"></a-ring>
+      </a-entity>
+
+      <a-entity id="placedFish" gltf-model="#fish" scale="0.5 0.5 0.5" visible="false"></a-entity>
+
+      <a-camera position="0 1.6 0"></a-camera>
+    </a-scene>
+
+    <div id="overlay" style="position: absolute; bottom: 20px; width: 100%; text-align: center; color: white; font-family: sans-serif; pointer-events: none;">
+        <p id="instruction">Move your phone to find the floor...</p>
+    </div>
+
+    <script>
+      const sceneEl = document.querySelector('a-scene');
+      const reticle = document.querySelector('#reticle');
+      const fish = document.querySelector('#placedFish');
+      const instruction = document.querySelector('#instruction');
+
+      // Listen for the 'hit-test' result from WebXR
+      sceneEl.addEventListener('enter-vr', () => {
+        if (sceneEl.is('ar-mode')) {
+          const session = sceneEl.xrSession;
+          
+          // Render loop for hit-testing
+          sceneEl.renderer.setAnimationLoop((time, frame) => {
+            if (!frame) return;
+            const refSpace = sceneEl.systems.webxr.sessionReferenceSpace;
+            const hitTestSource = sceneEl.systems.webxr.defaultHitTestSource;
+
+            if (hitTestSource) {
+              const hitTestResults = frame.getHitTestResults(hitTestSource);
+              if (hitTestResults.length > 0) {
+                const pose = hitTestResults[0].getPose(refSpace);
+                reticle.setAttribute('visible', 'true');
+                reticle.setAttribute('position', pose.transform.position);
+                instruction.innerText = "Tap to place the fish!";
+              }
+            }
+          });
+        }
+      });
+
+      // Place the fish when the user taps
+      window.addEventListener('click', () => {
+        if (reticle.getAttribute('visible') === 'true') {
+          fish.setAttribute('position', reticle.getAttribute('position'));
+          fish.setAttribute('visible', 'true');
+          instruction.innerText = "Fish placed!";
+        }
+      });
+    </script>
+</body>
+</html>
